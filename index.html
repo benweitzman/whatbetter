@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Whatbetter by zacharydenton</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/zacharydenton/whatbetter">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/zacharydenton/whatbetter/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/zacharydenton/whatbetter/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Whatbetter</h1>
+          <p>Automatically transcode and upload torrents.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/zacharydenton">zacharydenton</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h2>Introduction</h2>
+
+<p>whatbetter is a script which automatically transcodes and uploads FLACs on What.CD.</p>
+
+<p>The following command will scan through every FLAC you have ever downloaded, determine which formats are needed, transcode the FLAC to each needed format, and upload each format to What.CD -- no user input required.</p>
+
+<pre><code>$ whatbetter --all
+</code></pre>
+
+<h2>Installation</h2>
+
+<p>As an artifact of power, whatbetter requires that its would-be wielders pass a series of tests before use. This is all in the spirit of What.CD, of course.</p>
+
+<p>First of all, you're going to need Python to run whatbetter. Python 3 is unsupported due to the dependency on mechanize, which does not currently support Python 3.</p>
+
+<p>Once you've got Python installed, you need several modules: mechanize, mutagen, lxml, BeautifulSoup, and argparse. Try this:</p>
+
+<pre><code># pip install mechanize mutagen lxml BeautifulSoup argparse
+</code></pre>
+
+<p>Alternatively, if you have setuptools installed, you can do this (in the source directory):</p>
+
+<pre><code># ./setup.py install
+</code></pre>
+
+<p>This should theoretically install all required dependencies automatically.</p>
+
+<p>Furthermore, you need several external programs: mktorrent, flac, lame, oggenc, ffmpeg, and neroAacEnc. The method of installing these programs varies depending on your operating system, but if you're using something like Ubuntu you can do this:</p>
+
+<pre><code># aptitude install mktorrent flac lame vorbis-tools ffmpeg
+</code></pre>
+
+<p>For neroAacEnc, you need to download the encoder from <a href="http://www.nero.com/eng/downloads-nerodigital-nero-aac-codec.php">nero</a>, extract it, and place the binaries somewhere on your PATH. If you're on a 64 bit system make sure you have <code>ia32-libs</code> installed.</p>
+
+<p>At this point you may begin to speak with whatbetter. Perform the following command:</p>
+
+<pre><code>$ whatbetter
+</code></pre>
+
+<p>And you will receive a notification stating that you should edit the configuration file ~/.whatbetter/config (if you're lucky).</p>
+
+<h2>Configuration</h2>
+
+<p>You've made it far! Congratulations. Open up the file ~/.whatbetter/config in a text editor. You're going to see something like this:</p>
+
+<pre><code>[whatcd]
+username =
+password = 
+passkey = 
+data_dir =
+torrent_dir =
+</code></pre>
+
+<p>The username and password are your What.CD login credentials. The passkey is your tracker passkey. The data_dir is the directory where your downloads are stored. The torrent_dir is the directory where torrents should be created (e.g., your watch directory).</p>
+
+<p>You should end up with something like this:</p>
+
+<pre><code>[whatcd]
+username = RequestBunny
+password = clapton
+passkey = as309uasdfklwwe90sakjlsd
+data_dir = ~/Downloads
+torrent_dir = ~/Torrents
+</code></pre>
+
+<p>Alright! Now you're ready to use whatbetter.</p>
+
+<h2>Usage</h2>
+
+<pre><code>usage: whatbetter [-h] [-A] [-a] [--config CONFIG] [--cache CACHE]
+                [release_urls [release_urls ...]]
+
+positional arguments:
+release_urls     the URL where the release is located
+
+optional arguments:
+-h, --help       show this help message and exit
+-A, --auto       attempt to automatically find transcode candidates
+-a, --all        search through all snatched torrents for transcode
+                candidates
+--config CONFIG  the location of the configuration file (default:
+                ~/.whatbetter/config)
+--cache CACHE    the location of the cache (default: ~/.whatbetter/cache)
+</code></pre>
+
+<h2>Examples</h2>
+
+<p>To transcode and upload releases that are listed in the 'Snatch' section of better.php:</p>
+
+<pre><code>$ whatbetter --auto
+</code></pre>
+
+<p>To expand the search to every FLAC you've ever downloaded (this may take a while):</p>
+
+<pre><code>$ whatbetter --all
+</code></pre>
+
+<p>To transcode and upload a specific release (provided you have already downloaded the FLAC and it is located in your data_dir):</p>
+
+<pre><code>$ whatbetter http://what.cd/torrents.php?id=1000&amp;torrentid=1000000
+</code></pre>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+    
+  </body>
+</html>

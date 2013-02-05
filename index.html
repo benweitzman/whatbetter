@@ -1,152 +1,186 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>whatbetter by zacharydenton</title>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="whatbetter : Automatically transcode and upload torrents." />
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>whatbetter</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">whatbetter</h1>
-        <p class="header">Automatically transcode and upload torrents.</p>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/zacharydenton/whatbetter/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/zacharydenton/whatbetter/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/zacharydenton/whatbetter">View On GitHub</a></li>
-        </ul>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/zacharydenton/whatbetter">View on GitHub</a>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/zacharydenton">zacharydenton</a></p>
+          <h1 id="project_title">whatbetter</h1>
+          <h2 id="project_tagline">Automatically transcode and upload torrents.</h2>
 
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/zacharydenton/whatbetter/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/zacharydenton/whatbetter/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
 
-      </header>
-      <section>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h2>Introduction</h2>
 
-<p>whatbetter is a script which automatically transcodes and uploads FLACs on What.CD.</p>
+<p>whatbetter is a script which automatically transcodes and uploads FLACs
+on What.CD.</p>
 
-<p>The following command will scan through every FLAC you have ever downloaded, determine which formats are needed, transcode the FLAC to each needed format, and upload each format to What.CD -- no user input required.</p>
-
-<pre><code>$ whatbetter --all
-</code></pre>
-
-<h2>Installation</h2>
-
-<p>As an artifact of power, whatbetter requires that its would-be wielders pass a series of tests before use. This is all in the spirit of What.CD, of course.</p>
-
-<p>First of all, you're going to need Python to run whatbetter. Python 3 is unsupported due to the dependency on mechanize, which does not currently support Python 3.</p>
-
-<p>Once you've got Python installed, you need several modules: mechanize, mutagen, lxml, BeautifulSoup, and argparse. Try this:</p>
-
-<pre><code># pip install mechanize mutagen lxml BeautifulSoup argparse
-</code></pre>
-
-<p>Alternatively, if you have setuptools installed, you can do this (in the source directory):</p>
-
-<pre><code># ./setup.py install
-</code></pre>
-
-<p>This should theoretically install all required dependencies automatically.</p>
-
-<p>Furthermore, you need several external programs: mktorrent, flac, lame, oggenc, ffmpeg, and neroAacEnc. The method of installing these programs varies depending on your operating system, but if you're using something like Ubuntu you can do this:</p>
-
-<pre><code># aptitude install mktorrent flac lame vorbis-tools ffmpeg
-</code></pre>
-
-<p>For neroAacEnc, you need to download the encoder from <a href="http://www.nero.com/eng/downloads-nerodigital-nero-aac-codec.php">nero</a>, extract it, and place the binaries somewhere on your PATH. If you're on a 64 bit system make sure you have <code>ia32-libs</code> installed.</p>
-
-<p>At this point you may begin to speak with whatbetter. Perform the following command:</p>
+<p>The following command will scan through every FLAC you have ever
+downloaded, determine which formats are needed, transcode the FLAC to
+each needed format, and upload each format to What.CD -- automatically.</p>
 
 <pre><code>$ whatbetter
 </code></pre>
 
-<p>And you will receive a notification stating that you should edit the configuration file ~/.whatbetter/config (if you're lucky).</p>
+<h2>Installation</h2>
+
+<p>You're going to need to install a few dependencies before using
+whatbetter.</p>
+
+<p>First and foremost, you will need Python 2.7 or newer.</p>
+
+<p>Once you've got Python installed, you will need a few modules: mechanize,
+mutagen, and requests. Try this:</p>
+
+<pre><code>$ pip install -r requirements.txt
+</code></pre>
+
+<p>Alternatively, if you have setuptools installed, you can do this (in the
+source directory):</p>
+
+<pre><code>$ python setup.py install
+</code></pre>
+
+<p>This should theoretically install all required dependencies
+automatically.</p>
+
+<p>Furthermore, you need several external programs: mktorrent, flac,
+lame, and sox. The method of installing these programs varies
+depending on your operating system, but if you're using something like
+Ubuntu you can do this:</p>
+
+<pre><code># aptitude install mktorrent flac lame sox
+</code></pre>
+
+<p>At this point you may execute the following command:</p>
+
+<pre><code>$ whatbetter
+</code></pre>
+
+<p>And you will receive a notification stating that you should edit the
+configuration file ~/.whatbetter/config (if you're lucky).</p>
 
 <h2>Configuration</h2>
 
-<p>You've made it far! Congratulations. Open up the file ~/.whatbetter/config in a text editor. You're going to see something like this:</p>
+<p>You've made it far! Congratulations. Open up the file
+~/.whatbetter/config in a text editor. You're going to see something
+like this:</p>
 
 <pre><code>[whatcd]
 username =
 password = 
-passkey = 
 data_dir =
+output_dir =
 torrent_dir =
+formats = flac, v0, 320, v2
+media = sacd, soundboard, web, dvd, cd, dat, vinyl, blu-ray
 </code></pre>
 
-<p>The username and password are your What.CD login credentials. The passkey is your tracker passkey. The data_dir is the directory where your downloads are stored. The torrent_dir is the directory where torrents should be created (e.g., your watch directory).</p>
+<p><code>username</code> and <code>password</code> are your What.CD login credentials. 
+<code>data_dir</code> is the directory where your downloads are stored. 
+<code>output_dir</code> is the directory where your transcodes will be created. If
+the value is blank, <code>data_dir</code> will be used.
+<code>torrent_dir</code> is the directory where torrents should be created (e.g.,
+your watch directory). <code>formats</code> is a list of formats that you'd like to
+support (so if you don't want to upload V2, just remove it from this
+list).
+<code>media</code> is a list of lossless media types you want to consider for
+transcoding. The default value is all What.CD lossless formats, but if
+you want to transcode only CD and vinyl media, for example, you would
+set this to 'cd, vinyl'</p>
 
 <p>You should end up with something like this:</p>
 
 <pre><code>[whatcd]
 username = RequestBunny
 password = clapton
-passkey = as309uasdfklwwe90sakjlsd
-data_dir = ~/Downloads
-torrent_dir = ~/Torrents
+data_dir = /srv/downloads
+output_dir =
+torrent_dir = /srv/torrents
+formats = flac, v0, 320
+media = cd, vinyl, web
 </code></pre>
 
 <p>Alright! Now you're ready to use whatbetter.</p>
 
 <h2>Usage</h2>
 
-<pre><code>usage: whatbetter [-h] [-A] [-a] [--config CONFIG] [--cache CACHE]
-                [release_urls [release_urls ...]]
+<pre><code>usage: whatbetter [-h] [-s] [--config CONFIG] [--cache CACHE]
+                  [release_urls [release_urls ...]]
 
 positional arguments:
-release_urls     the URL where the release is located
+  release_urls     the URL where the release is located
 
 optional arguments:
--h, --help       show this help message and exit
--A, --auto       attempt to automatically find transcode candidates
--a, --all        search through all snatched torrents for transcode
-                candidates
---config CONFIG  the location of the configuration file (default:
-                ~/.whatbetter/config)
---cache CACHE    the location of the cache (default: ~/.whatbetter/cache)
+  -h, --help       show this help message and exit
+  -s, --single     only add one format per release (useful for getting unique
+                   groups)
+  --config CONFIG  the location of the configuration file (default:
+                   ~/.whatbetter/config)
+  --cache CACHE    the location of the cache (default: ~/.whatbetter/cache)
 </code></pre>
 
 <h2>Examples</h2>
 
-<p>To transcode and upload releases that are listed in the 'Snatch' section of better.php:</p>
+<p>To transcode and upload every FLAC you've every downloaded (this may
+take a while):</p>
 
-<pre><code>$ whatbetter --auto
+<pre><code>$ whatbetter
 </code></pre>
 
-<p>To expand the search to every FLAC you've ever downloaded (this may take a while):</p>
+<p>To transcode and upload a specific release (provided you have already
+downloaded the FLAC and it is located in your <code>data_dir</code>):</p>
 
-<pre><code>$ whatbetter --all
+<pre><code>$ whatbetter http://what.cd/torrents.php?id=1000\&amp;torrentid=1000000
 </code></pre>
 
-<p>To transcode and upload a specific release (provided you have already downloaded the FLAC and it is located in your data_dir):</p>
-
-<pre><code>$ whatbetter http://what.cd/torrents.php?id=1000&amp;torrentid=1000000
-</code></pre>
+<p>Note that if you specify a particular release(s), whatbetter will
+ignore your configuration's media types and attempt to transcode the
+releases you have specified regardless of their media type (so long as
+they are lossless types).</p>
       </section>
-      <footer>
-        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">whatbetter maintained by <a href="https://github.com/zacharydenton">zacharydenton</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		          <script type="text/javascript">
+
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
           <script type="text/javascript">
             try {
-              var pageTracker = _gat._getTracker("UA-15976986-5)");
+              var pageTracker = _gat._getTracker("UA-15976986-5");
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
+
 
   </body>
 </html>

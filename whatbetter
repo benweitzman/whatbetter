@@ -15,7 +15,7 @@ import tagging
 from _version import __version__
 
 def banner():
-    return 'Created with whatbetter %s.' % __version__
+    return 'whatbetter %s.' % __version__
 
 def create_description(torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.

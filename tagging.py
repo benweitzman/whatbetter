@@ -128,8 +128,7 @@ def copy_tags(flac_file, transcode_file):
         # totaltracks and totaldiscs may also appear in the FLAC file
         # as 'tracktotal' and 'disctotal'. We support either tag, but
         # in files with both we choose only one.
-
-        if 'tracknumber' in transcode_info.keys():
+        if ('tracknumber' in transcode_info.keys()) and (not re.match(r'\d+/\d+',transcode_info['tracknumber'][0])):
             totaltracks = None
             if 'totaltracks' in flac_info.keys():
                 totaltracks = scrub_tag('totaltracks', flac_info['totaltracks'][0])
@@ -139,7 +138,7 @@ def copy_tags(flac_file, transcode_file):
             if totaltracks:
                 transcode_info['tracknumber'] = [u'%s/%s' % (transcode_info['tracknumber'][0], totaltracks)]
 
-        if 'discnumber' in transcode_info.keys():
+        if ('discnumber' in transcode_info.keys()) and not (re.match(r'\d+/\d+',transcode_info['discnumber'][0])):
             totaldiscs = None
             if 'totaldiscs' in flac_info.keys():
                 totaldiscs = scrub_tag('totaldiscs', flac_info['totaldiscs'][0])

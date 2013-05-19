@@ -166,6 +166,33 @@ class WhatAPI:
                 done = 'Next &gt;' not in content
                 page += 1
 
+    def seeding(self, skip=None, media=lossless_media):
+        if not media.issubset(lossless_media):
+            raise ValueError('Unsupported media type %s' % (media - lossless_media).pop())
+
+        # gazelle doesn't currently support multiple values per query
+        # parameter, so we have to search a media type at a time;
+        # unless it's all types, in which case we simply don't specify
+        # a 'media' parameter (defaults to all types).
+
+        if media == lossless_media:
+            media_params = ['']
+        else:
+            media_params = ['&media=%s' % media_search_map[m] for m in media]
+
+        url = 'https://what.cd/torrents.php?type=seeding&userid=%s&format=FLAC' % self.userid
+        for mp in media_params:
+            page = 1
+            done = False
+            pattern = re.compile('torrents.php\?id=(\d+)&amp;torrentid=(\d+)')
+            while not done:
+                content = self.session.get(url + mp + "&page=%s" % page).text
+                for groupid, torrentid in pattern.findall(content):
+                    if skip is None or torrentid not in skip:
+                        yield int(groupid), int(torrentid)
+                done = 'Next &gt;' not in content
+                page += 1
+
     def upload(self, group, torrent, new_torrent, format, description=[]):
         url = "https://what.cd/upload.php?groupid=%s" % group['group']['id']
         response = self.session.get(url)

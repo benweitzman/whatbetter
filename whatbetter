@@ -77,6 +77,7 @@ def main():
         config.set('whatcd', 'torrent_dir', '')
         config.set('whatcd', 'formats', 'flac, v0, 320, v2')
         config.set('whatcd', 'media', ', '.join(whatapi.lossless_media))
+        config.set('whatcd', 'seeding', 'false')
         config.write(open(args.config, 'w'))
         print 'Please edit the configuration file: %s' % args.config
         sys.exit(2)
@@ -92,6 +93,7 @@ def main():
             output_dir = data_dir
         torrent_dir = os.path.expanduser(config.get('whatcd', 'torrent_dir'))
         supported_formats = [format.strip().upper() for format in config.get('whatcd', 'formats').split(',')]
+        seeding = config.get('whatcd', 'seeding')
 
         try:
             media_config = config.get('whatcd', 'media')
@@ -122,6 +124,8 @@ def main():
         print 'You supplied one or more release URLs, ignoring your configuration\'s media types.'
         candidates = [(int(query['id']), int(query['torrentid'])) for query in\
                 [dict(urlparse.parse_qsl(urlparse.urlparse(url).query)) for url in args.release_urls]]
+    elif seeding == 'true':
+        candidates = api.seeding(skip=seen, media=supported_media)
     else:
         candidates = api.snatched(skip=seen, media=supported_media)
 

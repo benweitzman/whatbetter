@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import os
 import errno
 import re
@@ -86,21 +86,21 @@ def ext_matcher(*extensions):
 
 def is_24bit(flac_dir):
     '''
-    Returns True if any FLAC within flac_dir is 24 bit.
+    Returns True if all FLAC within flac_dir is 24 bit.
     '''
     flacs = (mutagen.flac.FLAC(flac_file) for flac_file in locate(flac_dir, ext_matcher('.flac')))
-    return any(flac.info.bits_per_sample > 16 for flac in flacs)
+    return all(flac.info.bits_per_sample > 16 for flac in flacs)
 
 def is_multichannel(flac_dir):
     '''
-    Returns True if any FLAC within flac_dir is multichannel.
+    Returns True if all FLAC within flac_dir is multichannel.
     '''
     flacs = (mutagen.flac.FLAC(flac_file) for flac_file in locate(flac_dir, ext_matcher('.flac')))
-    return any(flac.info.channels > 2 for flac in flacs)
+    return all(flac.info.channels > 2 for flac in flacs)
 
 def needs_dithering(flac_dir):
     '''
-    Returns True if any FLAC within flac_dir needs dithering when
+    Returns True if all FLAC within flac_dir needs dithering when
     transcoded.
     '''
     return is_24bit(flac_dir)

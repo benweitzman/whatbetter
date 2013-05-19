@@ -88,6 +88,8 @@ def is_24bit(flac_dir):
     '''
     Returns True if all FLAC within flac_dir is 24 bit.
     '''
+    if not os.path.exists(flac_dir):
+        return False
     flacs = (mutagen.flac.FLAC(flac_file) for flac_file in locate(flac_dir, ext_matcher('.flac')))
     return all(flac.info.bits_per_sample > 16 for flac in flacs)
 
@@ -95,6 +97,8 @@ def is_multichannel(flac_dir):
     '''
     Returns True if all FLAC within flac_dir is multichannel.
     '''
+    if not os.path.exists(flac_dir):
+        return False
     flacs = (mutagen.flac.FLAC(flac_file) for flac_file in locate(flac_dir, ext_matcher('.flac')))
     return all(flac.info.channels > 2 for flac in flacs)
 

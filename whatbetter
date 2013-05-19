@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import os
 import sys
 import shutil
@@ -15,7 +15,7 @@ import tagging
 from _version import __version__
 
 def banner():
-    return 'Created with [url=http://github.com/zacharydenton/whatbetter]whatbetter[/url] version %s.' % __version__
+    return 'Created with whatbetter %s.' % __version__
 
 def create_description(torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.

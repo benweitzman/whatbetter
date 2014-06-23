@@ -74,7 +74,7 @@ def scrub_tag(name, value):
 
     return scrubbed_value
 
-def check_tags(filename, check_tracknumber_format=True):
+def check_tags(filename, check_tracknumber_format=False, skip_tracknumber=True):
     """Verify that the file has the required What.CD tags.
 
     Returns (True, None) if OK, (False, msg) if a tag is missing or
@@ -82,7 +82,10 @@ def check_tags(filename, check_tracknumber_format=True):
 
     """
     info = mutagen.File(filename, easy=True)
-    for tag in ['artist', 'album', 'title', 'tracknumber']:
+    tags_to_check = ['artist', 'album', 'title', 'tracknumber']
+    if skip_tracknumber:
+        tags_to_check = ['artist','title', 'album']
+    for tag in tags_to_check:
         if tag not in info.keys():
             return (False, '"%s" has no %s tag' % (filename, tag))
         elif info[tag] == [u'']:

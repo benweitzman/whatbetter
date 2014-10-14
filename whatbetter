@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 import os
 import sys
 import shutil
@@ -15,14 +15,11 @@ import tagging
 from _version import __version__
 
 def banner():
-    return 'wb %s.' % __version__
+    return 'Created with [url=http://github.com/seanhelling/whatcdbetter]whatcdbetter[/url] (based on [url=http://github.com/zacharydenton/whatcdbetter]whatcdbetter[/url]) version %s.' % __version__
 
 def create_description(torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.
-    cmds = transcode.transcode_commands(format,
-            transcode.needs_resampling(flac_dir),
-            transcode.resample_rate(flac_dir),
-            'input.flac', 'output' + transcode.encoders[format]['ext'])
+    cmds = transcode.transcode_commands(format, transcode.needs_dithering(flac_dir), 'input.flac', 'output' + transcode.encoders[format]['ext'])
 
     description = [
         'Transcode of [url=%s]%s[/url]' % (permalink, permalink),
@@ -50,15 +47,15 @@ def formats_needed(group, torrent, supported_formats):
     return [format for format in missing_formats if format in allowed_formats]
 
 def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='whatbetter')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='whatcdbetter')
     parser.add_argument('release_urls', nargs='*', help='the URL where the release is located')
     parser.add_argument('-s', '--single', action='store_true', help='only add one format per release (useful for getting unique groups)')
     parser.add_argument('-j', '--threads', type=int, help='number of threads to use when transcoding',
             default=cpu_count())
     parser.add_argument('--config', help='the location of the configuration file', \
-            default=os.path.expanduser('~/.whatbetter/config'))
+            default=os.path.expanduser('~/.whatcdbetter/config'))
     parser.add_argument('--cache', help='the location of the cache', \
-            default=os.path.expanduser('~/.whatbetter/cache'))
+            default=os.path.expanduser('~/.whatcdbetter/cache'))
     parser.add_argument('-U', '--no-upload', action='store_true', help='don\'t upload new torrents (in case you want to do it manually)')
     parser.add_argument('-E', '--no-24bit-edit', action='store_true', help='don\'t try to edit 24-bit torrents mistakenly labeled as 16-bit')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
@@ -80,7 +77,6 @@ def main():
         config.set('whatcd', 'torrent_dir', '')
         config.set('whatcd', 'formats', 'flac, v0, 320, v2')
         config.set('whatcd', 'media', ', '.join(whatapi.lossless_media))
-        config.set('whatcd', 'seeding', 'false')
         config.write(open(args.config, 'w'))
         print 'Please edit the configuration file: %s' % args.config
         sys.exit(2)
@@ -96,7 +92,6 @@ def main():
             output_dir = data_dir
         torrent_dir = os.path.expanduser(config.get('whatcd', 'torrent_dir'))
         supported_formats = [format.strip().upper() for format in config.get('whatcd', 'formats').split(',')]
-        seeding = config.get('whatcd', 'seeding')
 
         try:
             media_config = config.get('whatcd', 'media')
@@ -113,7 +108,7 @@ def main():
 
     upload_torrent = not args.no_upload
 
-    print 'Logging in to What.CD...'
+    print 'Logging in to What...'
     api = whatapi.WhatAPI(username, password)
 
     try:
@@ -127,8 +122,6 @@ def main():
         print 'You supplied one or more release URLs, ignoring your configuration\'s media types.'
         candidates = [(int(query['id']), int(query['torrentid'])) for query in\
                 [dict(urlparse.parse_qsl(urlparse.urlparse(url).query)) for url in args.release_urls]]
-    elif seeding == 'true':
-        candidates = api.seeding(skip=seen, media=supported_media)
     else:
         candidates = api.snatched(skip=seen, media=supported_media)
 
@@ -151,8 +144,6 @@ def main():
             shutil.copy(flac_file, flac_dir)
         else:
             flac_dir = os.path.join(data_dir, whatapi.unescape(torrent['filePath']))
-
-        flac_dir = flac_dir.encode(sys.getfilesystemencoding())
 
         try:
             if transcode.is_24bit(flac_dir) and torrent['encoding'] != '24bit Lossless':
@@ -184,15 +175,13 @@ def main():
             # on the tracknumber formatting; problems with tracknumber
             # may be fixable when the tags are copied.
             broken_tags = False
-            skip_tracknumber = group['group']['releaseType'] == 9
             for flac_file in transcode.locate(flac_dir, transcode.ext_matcher('.flac')):
-                (ok, msg) = tagging.check_tags(flac_file, check_tracknumber_format=False, skip_tracknumber=skip_tracknumber)
+                (ok, msg) = tagging.check_tags(flac_file, check_tracknumber_format=False)
                 if not ok:
                     print "A FLAC file in this release has unacceptable tags - skipping: %s" % msg
                     print "You might be able to trump it."
                     broken_tags = True
                     break
-                skip_tracknumber = False
             if broken_tags:
                 continue
 
@@ -211,7 +200,7 @@ def main():
                     print "done!"
                     if args.single: break
                 except Exception as e:
-                    print u"Error adding format {}: {}".format(format, e)
+                    print "Error adding format %s" % (format)
                 finally:
                     shutil.rmtree(tmpdir)
             else:

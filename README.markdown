@@ -104,9 +104,9 @@ Usage
       -j THREADS, --threads THREADS
                             number of threads to use when transcoding (default: 8)
       --config CONFIG       the location of the configuration file (default:
-                            /Users/ben/.whatbetter/config)
+                            ~/.whatbetter/config)
       --cache CACHE         the location of the cache (default:
-                            /Users/ben/.whatbetter/cache)
+                            ~/.whatbetter/cache)
       -U, --no-upload       don't upload new torrents (in case you want to do it
                             manually) (default: False)
       -E, --no-24bit-edit   don't try to edit 24-bit torrents mistakenly labeled

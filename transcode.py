@@ -49,7 +49,8 @@ def run_pipeline(cmds):
     procs = []
     try:
         for cmd in cmds:
-            proc = subprocess.Popen(shlex.split(cmd), stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            r = shlex.split(cmd.encode('utf-8'))
+            proc = subprocess.Popen(r, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if last_proc:
                 # Ensure last_proc receives SIGPIPE if proc exits first
                 last_proc.stdout.close()

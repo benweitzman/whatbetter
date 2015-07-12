@@ -12,14 +12,19 @@ from multiprocessing import cpu_count
 import whatapi
 import transcode
 import tagging
+import torrenter
 from _version import __version__
+
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4)
 
 def banner():
     return 'Created with [url=http://github.com/seanhelling/whatcdbetter]whatcdbetter[/url] (based on [url=http://github.com/zacharydenton/whatcdbetter]whatcdbetter[/url]) version %s.' % __version__
 
 def create_description(torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.
-    cmds = transcode.transcode_commands(format, transcode.needs_dithering(flac_dir), 'input.flac', 'output' + transcode.encoders[format]['ext'])
+    cmds = transcode.transcode_commands(format, transcode.needs_resampling(flac_dir), transcode.resample_rate(flac_dir), 'input.flac', 'output' + transcode.encoders[format]['ext'])
 
     description = [
         'Transcode of [url=%s]%s[/url]' % (permalink, permalink),
@@ -40,9 +45,11 @@ def formats_needed(group, torrent, supported_formats):
                            t['remasterCatalogueNumber'] == torrent['remasterCatalogueNumber']
 
     others = filter(same_group, group['torrents'])
+
     current_formats = set((t['format'], t['encoding']) for t in others)
     missing_formats = [format for format, details in [(f, whatapi.formats[f]) for f in supported_formats]\
                            if (details['format'], details['encoding']) not in current_formats]
+
     allowed_formats = whatapi.allowed_transcodes(torrent)
     return [format for format in missing_formats if format in allowed_formats]
 
@@ -58,6 +65,7 @@ def main():
             default=os.path.expanduser('~/.whatcdbetter/cache'))
     parser.add_argument('-U', '--no-upload', action='store_true', help='don\'t upload new torrents (in case you want to do it manually)')
     parser.add_argument('-E', '--no-24bit-edit', action='store_true', help='don\'t try to edit 24-bit torrents mistakenly labeled as 16-bit')
+    parser.add_argument('-B', '--download-better', action='store_true', help='Download FLAC torrents from better.php to automatically convert')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
@@ -107,6 +115,7 @@ def main():
             supported_media = whatapi.lossless_media
 
     upload_torrent = not args.no_upload
+    download_better = args.download_better
 
     print 'Logging in to What...'
     api = whatapi.WhatAPI(username, password)
@@ -115,17 +124,9 @@ def main():
         seen = pickle.load(open(args.cache))
     except:
         seen = set()
-        pickle.dump(seen, open(args.cache, 'wb'))
+        pickle.dump(seen, open(args.cache, 'wb'))    
 
-    print 'Searching for transcode candidates...'
-    if args.release_urls:
-        print 'You supplied one or more release URLs, ignoring your configuration\'s media types.'
-        candidates = [(int(query['id']), int(query['torrentid'])) for query in\
-                [dict(urlparse.parse_qsl(urlparse.urlparse(url).query)) for url in args.release_urls]]
-    else:
-        candidates = api.snatched(skip=seen, media=supported_media)
-
-    for groupid, torrentid in candidates:
+    def transcodeAndUpload(groupid, torrentid):
         group = api.request('torrentgroup', id=groupid)
         torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
 
@@ -137,7 +138,7 @@ def main():
             flac_file = os.path.join(data_dir, whatapi.unescape(torrent['fileList']).split('{{{')[0])
             if not os.path.exists(flac_file):
                 print "Path not found - skipping: %s" % flac_file
-                continue
+                return
             flac_dir = os.path.join(data_dir, "%s (%s) [FLAC]" % (whatapi.unescape(group['group']['name']), group['group']['year']))
             if not os.path.exists(flac_dir):
                 os.makedirs(flac_dir)
@@ -153,18 +154,18 @@ def main():
                 # on the site (and get an extra upload in the process).
                 if args.no_24bit_edit:
                     print "Release is actually 24-bit lossless, skipping."
-                    continue
+                    return
                 print "Marking release as 24bit lossless."
                 api.set_24bit(torrent)
                 group = api.request('torrentgroup', id=groupid)
                 torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
         except Exception as e:
             print "Error: can't edit 24-bit torrent - skipping: %s" % e
-            continue
+            return
 
         if transcode.is_multichannel(flac_dir):
             print "This is a multichannel release, which is unsupported - skipping"
-            continue
+            return
 
         needed = formats_needed(group, torrent, supported_formats)
         print "Formats needed: %s" % ', '.join(needed)
@@ -183,7 +184,7 @@ def main():
                     broken_tags = True
                     break
             if broken_tags:
-                continue
+                return
 
         for format in needed:
             if os.path.exists(flac_dir):
@@ -209,6 +210,35 @@ def main():
 
         seen.add(str(torrentid))
         pickle.dump(seen, open(args.cache, 'wb'))
+
+    if not download_better:
+        print 'Searching for transcode candidates...'
+        if args.release_urls:
+            print 'You supplied one or more release URLs, ignoring your configuration\'s media types.'
+            candidates = [(int(query['id']), int(query['torrentid'])) for query in\
+                    [dict(urlparse.parse_qsl(urlparse.urlparse(url).query)) for url in args.release_urls]]
+        else:
+            candidates = api.snatched(skip=seen, media=supported_media)
+
+        for groupid, torrentid in candidates:
+            transcodeAndUpload(groupid, torrentid)
+    else:
+
+        downloader = torrenter.Torrenter(data_dir, torrent_dir)
+
+        for (file_name, release_url) in api.download_better_all():
+            downloader.add(release_url, file_name)
+
+        for release_url in downloader.done():
+            print "%s finished" % release_url
+
+            query = dict(urlparse.parse_qsl(urlparse.urlparse(release_url).query))
+            groupid, torrentid = (int(query['id']), int(query['torrentid']))
+
+            try:
+                transcodeAndUpload(groupid, torrentid)
+            except:
+                print "Error transcoding releaes %s" % release_url
 
 if __name__ == "__main__":
     main()

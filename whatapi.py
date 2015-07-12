@@ -7,6 +7,8 @@ import requests
 import mechanize
 import HTMLParser
 from cStringIO import StringIO
+from tempfile import NamedTemporaryFile
+import sys
 
 headers = {
     'Connection': 'keep-alive',
@@ -194,28 +196,66 @@ class WhatAPI:
                 page += 1
 
     def upload(self, group, torrent, new_torrent, format, description=[]):
-        url = "https://what.cd/upload.php?groupid=%s" % group['group']['id']
-        response = self.session.get(url)
-        forms = mechanize.ParseFile(StringIO(response.text.encode('utf-8')), url)
-        form = forms[-1]
-        form.find_control('file_input').add_file(open(new_torrent), 'application/x-bittorrent', os.path.basename(new_torrent))
-        if torrent['remastered']:
-            form.find_control('remaster').set_single('1')
-            form['remaster_year'] = str(torrent['remasterYear'])
-            form['remaster_title'] = torrent['remasterTitle']
-            form['remaster_record_label'] = torrent['remasterRecordLabel']
-            form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
+        try:
+            url = "https://what.cd/upload.php?groupid=%s" % group['group']['id']
+            response = self.session.get(url)
+            forms = mechanize.ParseFile(StringIO(response.text.encode('utf-8')), url)
+            form = forms[-1]
+            form.find_control('file_input').add_file(open(new_torrent), 'application/x-bittorrent', os.path.basename(new_torrent).encode('utf-8'))
+            if torrent['remastered']:
+                form.find_control('remaster').set_single('1')
+                form['remaster_year'] = str(torrent['remasterYear'])
+                form['remaster_title'] = torrent['remasterTitle']
+                form['remaster_record_label'] = torrent['remasterRecordLabel']
+                form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
 
-        form.find_control('format').set('1', formats[format]['format'])
-        form.find_control('bitrate').set('1', formats[format]['encoding'])
-        form.find_control('media').set('1', torrent['media'])
+            form.find_control('format').set('1', formats[format]['format'])
+            form.find_control('bitrate').set('1', formats[format]['encoding'])
+            form.find_control('media').set('1', torrent['media'])
 
-        release_desc = '\n'.join(description)
-        if release_desc:
-            form['release_desc'] = release_desc
+            release_desc = '\n'.join(description)
+            if release_desc:
+                form['release_desc'] = release_desc
 
-        _, data, headers = form.click_request_data()
-        return self.session.post(url, data=data, headers=dict(headers))
+            _, data, headers = form.click_request_data()
+            return self.session.post(url, data=data, headers=dict(headers))
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise e
+
+    def download_better_all(self):
+        return self.download_better("https://what.cd/better.php?method=transcode&type=3&search=2015")
+
+    def download_better(self, better_url):
+        response = self.session.get(better_url)
+
+        link_matcher = re.compile("<tr>[\t\W\r\n]*?<td>.*?a href=\"([^\"]*)\".*?a href=\"([^\"]*)\" class=\"tooltip\"", re.M)
+
+        html = response.text.encode('utf-8').replace("\n", " ")
+
+        for match in link_matcher.finditer(html):
+
+            torrent_url = match.group(1).replace("&amp;", "&")
+            torrent_release_url = match.group(2).split("#")[0].replace("&amp;", "&")
+
+            download_file = NamedTemporaryFile(delete=False, suffix='.torrent')
+
+            with download_file as handle:
+                response = requests.get('https://what.cd/' + torrent_url, stream=True)
+
+                if not response.ok:
+                    pass
+
+                for block in response.iter_content(1024):
+                    handle.write(block)
+
+            download_file.close()
+
+            yield (download_file.name, "https://what.cd/" + torrent_release_url)
+
+
 
     def set_24bit(self, torrent):
         url = "https://what.cd/torrents.php?action=edit&id=%s" % torrent['id']

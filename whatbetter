@@ -15,10 +15,6 @@ import tagging
 import torrenter
 from _version import __version__
 
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
-
 def banner():
     return 'Created with [url=http://github.com/seanhelling/whatcdbetter]whatcdbetter[/url] (based on [url=http://github.com/zacharydenton/whatcdbetter]whatcdbetter[/url]) version %s.' % __version__
 

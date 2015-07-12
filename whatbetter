@@ -16,11 +16,15 @@ import torrenter
 from _version import __version__
 
 def banner():
-    return 'Created with [url=http://github.com/seanhelling/whatcdbetter]whatcdbetter[/url] (based on [url=http://github.com/zacharydenton/whatcdbetter]whatcdbetter[/url]) version %s.' % __version__
+    return 'Created with [url=https://github.com/gigantore/whatbetter]whatbetter[/url]) version %s.' % __version__
 
 def create_description(torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.
-    cmds = transcode.transcode_commands(format, transcode.needs_resampling(flac_dir), transcode.resample_rate(flac_dir), 'input.flac', 'output' + transcode.encoders[format]['ext'])
+    cmds = transcode.transcode_commands(format, 
+            transcode.needs_resampling(flac_dir), 
+            transcode.resample_rate(flac_dir), 
+            'input.flac', 
+            'output' + transcode.encoders[format]['ext'])
 
     description = [
         'Transcode of [url=%s]%s[/url]' % (permalink, permalink),
@@ -50,15 +54,15 @@ def formats_needed(group, torrent, supported_formats):
     return [format for format in missing_formats if format in allowed_formats]
 
 def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='whatcdbetter')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='whatbetter')
     parser.add_argument('release_urls', nargs='*', help='the URL where the release is located')
     parser.add_argument('-s', '--single', action='store_true', help='only add one format per release (useful for getting unique groups)')
     parser.add_argument('-j', '--threads', type=int, help='number of threads to use when transcoding',
             default=cpu_count())
     parser.add_argument('--config', help='the location of the configuration file', \
-            default=os.path.expanduser('~/.whatcdbetter/config'))
+            default=os.path.expanduser('~/.whatbetter/config'))
     parser.add_argument('--cache', help='the location of the cache', \
-            default=os.path.expanduser('~/.whatcdbetter/cache'))
+            default=os.path.expanduser('~/.whatbetter/cache'))
     parser.add_argument('-U', '--no-upload', action='store_true', help='don\'t upload new torrents (in case you want to do it manually)')
     parser.add_argument('-E', '--no-24bit-edit', action='store_true', help='don\'t try to edit 24-bit torrents mistakenly labeled as 16-bit')
     parser.add_argument('-B', '--download-better', action='store_true', help='Download FLAC torrents from better.php to automatically convert')

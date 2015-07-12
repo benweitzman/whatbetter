@@ -90,19 +90,31 @@ Alright! Now you're ready to use whatbetter.
 Usage
 -----
 
-    usage: whatbetter [-h] [-s] [--config CONFIG] [--cache CACHE]
+    usage: whatbetter [-h] [-s] [-j THREADS] [--config CONFIG] [--cache CACHE]
+                      [-U] [-E] [-B] [--version]
                       [release_urls [release_urls ...]]
 
     positional arguments:
-      release_urls     the URL where the release is located
+      release_urls          the URL where the release is located (default: None)
 
     optional arguments:
-      -h, --help       show this help message and exit
-      -s, --single     only add one format per release (useful for getting unique
-                       groups)
-      --config CONFIG  the location of the configuration file (default:
-                       ~/.whatbetter/config)
-      --cache CACHE    the location of the cache (default: ~/.whatbetter/cache)
+      -h, --help            show this help message and exit
+      -s, --single          only add one format per release (useful for getting
+                            unique groups) (default: False)
+      -j THREADS, --threads THREADS
+                            number of threads to use when transcoding (default: 8)
+      --config CONFIG       the location of the configuration file (default:
+                            /Users/ben/.whatbetter/config)
+      --cache CACHE         the location of the cache (default:
+                            /Users/ben/.whatbetter/cache)
+      -U, --no-upload       don't upload new torrents (in case you want to do it
+                            manually) (default: False)
+      -E, --no-24bit-edit   don't try to edit 24-bit torrents mistakenly labeled
+                            as 16-bit (default: False)
+      -B, --download-better
+                            Download FLAC torrents from better.php to
+                            automatically convert (default: False)
+      --version             show program's version number and exit
 
 Examples
 --------
@@ -121,3 +133,8 @@ Note that if you specify a particular release(s), whatbetter will
 ignore your configuration's media types and attempt to transcode the
 releases you have specified regardless of their media type (so long as
 they are lossless types).
+
+To automatically download downlaod/transcode/upload from better.php
+(DANGER! DON'T DO THIS IF YOU DON'T KNOW WHAT YOU'RE DOING):
+
+    $ whatbetter -B 
